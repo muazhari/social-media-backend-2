@@ -13,15 +13,15 @@ import java.util.UUID;
 @AllArgsConstructor
 @NoArgsConstructor
 @Accessors(chain = true)
-@Table(name = "post")
+@Table(name = "chat_message")
 @Entity
-public class Chat extends Model {
+public class ChatMessage extends Model {
     @Id
     UUID id;
     String content;
-    UUID authorAccountId;
+    UUID accountId;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "room_id", nullable = false)
-    Room room;
+    @JoinColumn(name = "chat_room_id", nullable = false)
+    ChatRoom chatRoom;
 }

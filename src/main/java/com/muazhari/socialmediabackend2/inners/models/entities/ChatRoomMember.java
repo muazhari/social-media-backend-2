@@ -5,7 +5,6 @@ import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.Accessors;
 
-import java.util.Set;
 import java.util.UUID;
 
 @Builder
@@ -14,14 +13,14 @@ import java.util.UUID;
 @AllArgsConstructor
 @NoArgsConstructor
 @Accessors(chain = true)
-@Table(name = "post")
+@Table(name = "chat_message")
 @Entity
-public class Room extends Model {
+public class ChatRoomMember extends Model {
     @Id
     UUID id;
-    String name;
-    String description;
+    UUID accountId;
 
-    @OneToMany(mappedBy = "room", fetch = FetchType.LAZY)
-    Set<Chat> chats;
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "chat_room_id", nullable = false)
+    ChatRoom chatRoom;
 }
