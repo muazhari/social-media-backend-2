@@ -25,7 +25,7 @@ import java.io.IOException;
 public class TransactionMiddleware extends GenericFilterBean {
 
     @Autowired
-    @Qualifier("oneTransactionManager")
+    @Qualifier("threeTransactionManager")
     PlatformTransactionManager transactionManager;
 
     static final Logger logger = LoggerFactory.getLogger(TransactionMiddleware.class);

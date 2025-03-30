@@ -5,7 +5,6 @@ import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.Accessors;
 
-import java.util.Set;
 import java.util.UUID;
 
 @Builder
@@ -14,15 +13,14 @@ import java.util.UUID;
 @AllArgsConstructor
 @NoArgsConstructor
 @Accessors(chain = true)
-@Table(name = "post")
+@Table(name = "post_like")
 @Entity
-public class Post extends Model {
+public class PostLike extends Model {
     @Id
     UUID id;
-    String title;
-    String content;
     UUID accountId;
 
-    @OneToMany(mappedBy = "post", fetch = FetchType.LAZY)
-    Set<PostLike> postLikes;
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "post_id", nullable = false)
+    Post post;
 }

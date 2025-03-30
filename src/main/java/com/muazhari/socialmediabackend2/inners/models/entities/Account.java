@@ -1,11 +1,9 @@
 package com.muazhari.socialmediabackend2.inners.models.entities;
 
 import com.muazhari.socialmediabackend2.inners.models.Model;
-import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.Accessors;
 
-import java.util.Set;
 import java.util.UUID;
 
 @Builder
@@ -14,15 +12,6 @@ import java.util.UUID;
 @AllArgsConstructor
 @NoArgsConstructor
 @Accessors(chain = true)
-@Table(name = "post")
-@Entity
-public class Post extends Model {
-    @Id
+public class Account extends Model {
     UUID id;
-    String title;
-    String content;
-    UUID accountId;
-
-    @OneToMany(mappedBy = "post", fetch = FetchType.LAZY)
-    Set<PostLike> postLikes;
 }

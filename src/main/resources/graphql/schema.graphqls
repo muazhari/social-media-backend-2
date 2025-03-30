@@ -1,0 +1,61 @@
+type ChatMessage @key(fields: "id") {
+    id: ID!
+    content: String!
+    account: Account!
+    room: ChatRoom!
+}
+
+type ChatRoomMember @key(fields: "id") {
+    id: ID!
+    account: Account!
+    room: ChatRoom!
+}
+
+type ChatRoom @key(fields: "id") {
+    id: ID!
+    name: String!
+    description: String
+    members: [ChatRoomMember]
+    messages: [ChatMessage]
+}
+
+type Post @key(fields: "id") {
+    id: ID!
+    title: String!
+    content: String!
+    account: Account!
+    likes: [PostLike]
+}
+
+type PostLike @key(fields: "id") {
+    id: ID!
+    post: Post!
+    account: Account!
+}
+
+type Account @key(fields: "id") @extends {
+    id: ID!
+    name: String!
+    email: String!
+    password: String!
+    totalPostLike: Float!
+    totalChatMessage: Float!
+    messages: [ChatMessage]
+    rooms: [ChatRoom]
+    posts: [Post]
+}
+
+type Query {
+    chatRooms: [ChatRoom]
+    chatRoomMembers(chatRoomId: ID!): [ChatRoomMember]
+    chatMessages(chatRoomId: ID!): [ChatMessage]
+    posts: [Post]
+}
+
+type Mutation {
+    addChatRoom(name: String!, description: String): ChatRoom
+    addMemberToChatRoom(accountId: ID!, chatRoomId: ID!): ChatRoomMember
+    addChatMessage(chatRoomId: ID!, accountId: ID!, content: String!): ChatMessage
+    addPost(accountId: ID!, title: String!, content: String!): Post
+    likePost(postId: ID!): Post
+}

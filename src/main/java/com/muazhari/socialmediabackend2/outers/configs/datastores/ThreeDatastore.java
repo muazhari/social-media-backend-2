@@ -1,4 +1,4 @@
-package com.muazhari.socialmediabackend2.outers.configurations.datastores.three;
+package com.muazhari.socialmediabackend2.outers.configs.datastores;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -23,9 +23,9 @@ import java.util.HashMap;
 @Configuration
 @EnableTransactionManagement
 @EnableJpaRepositories(
-        basePackages = "com.muazhari.socialmediabackend2.outers.repositories.twos",
-        entityManagerFactoryRef = "oneEntityManagerFactory",
-        transactionManagerRef = "oneTransactionManager"
+        basePackages = "com.muazhari.socialmediabackend2.outers.repositories.threes",
+        entityManagerFactoryRef = "threeEntityManagerFactory",
+        transactionManagerRef = "threeTransactionManager"
 )
 public class ThreeDatastore {
 
@@ -33,38 +33,38 @@ public class ThreeDatastore {
     Environment environment;
 
     @Bean
-    public DataSource oneDataSource() {
+    public DataSource threeDataSource() {
         DriverManagerDataSource dataSource = new DriverManagerDataSource();
         String url = String.format(
                 "jdbc:postgresql://%s:%s/%s",
-                environment.getProperty("datastore.one.host"),
-                environment.getProperty("datastore.one.port"),
-                environment.getProperty("datastore.one.database")
+                environment.getProperty("datastore.three.host"),
+                environment.getProperty("datastore.three.port"),
+                environment.getProperty("datastore.three.database")
         );
         dataSource.setDriverClassName("org.postgresql.Driver");
         dataSource.setUrl(url);
-        dataSource.setUsername(environment.getProperty("datastore.one.user"));
-        dataSource.setPassword(environment.getProperty("datastore.one.password"));
+        dataSource.setUsername(environment.getProperty("datastore.three.user"));
+        dataSource.setPassword(environment.getProperty("datastore.three.password"));
         return dataSource;
     }
 
     @Bean
-    public JdbcTemplate oneTemplate(@Qualifier("oneDataSource") DataSource dataSource) {
+    public JdbcTemplate threeTemplate(@Qualifier("threeDataSource") DataSource dataSource) {
         return new JdbcTemplate(dataSource);
     }
 
     @Bean
-    public NamedParameterJdbcTemplate oneNamedTemplate(@Qualifier("oneDataSource") DataSource dataSource) {
+    public NamedParameterJdbcTemplate threeNamedTemplate(@Qualifier("threeDataSource") DataSource dataSource) {
         return new NamedParameterJdbcTemplate(dataSource);
     }
 
     @Bean
-    public LocalContainerEntityManagerFactoryBean oneEntityManagerFactory(@Qualifier("oneDataSource") DataSource dataSource) {
+    public LocalContainerEntityManagerFactoryBean threeEntityManagerFactory(@Qualifier("threeDataSource") DataSource dataSource) {
         HibernateJpaVendorAdapter vendorAdapter = new HibernateJpaVendorAdapter();
         LocalContainerEntityManagerFactoryBean factory = new LocalContainerEntityManagerFactoryBean();
         factory.setJpaVendorAdapter(vendorAdapter);
         factory.setDataSource(dataSource);
-        factory.setPackagesToScan("org.dti.se.finalproject1backend1.inners.models.entities");
+        factory.setPackagesToScan("com.muazhari.socialmediabackend2.inners.models.entities");
         HashMap<String, Object> properties = new HashMap<>();
         properties.put("hibernate.dialect", "org.hibernate.dialect.PostgreSQLDialect");
         properties.put("hibernate.physical_naming_strategy", "org.hibernate.boot.model.naming.CamelCaseToUnderscoresNamingStrategy");
@@ -73,14 +73,14 @@ public class ThreeDatastore {
     }
 
     @Bean
-    public PlatformTransactionManager oneTransactionManager(@Qualifier("oneEntityManagerFactory") LocalContainerEntityManagerFactoryBean entityManagerFactory) {
+    public PlatformTransactionManager threeTransactionManager(@Qualifier("threeEntityManagerFactory") LocalContainerEntityManagerFactoryBean entityManagerFactory) {
         JpaTransactionManager transactionManager = new JpaTransactionManager();
         transactionManager.setEntityManagerFactory(entityManagerFactory.getObject());
         return transactionManager;
     }
 
     @Bean
-    public TransactionTemplate oneTransactionTemplate(@Qualifier("oneTransactionManager") PlatformTransactionManager transactionManager) {
+    public TransactionTemplate threeTransactionTemplate(@Qualifier("threeTransactionManager") PlatformTransactionManager transactionManager) {
         return new TransactionTemplate(transactionManager);
     }
 

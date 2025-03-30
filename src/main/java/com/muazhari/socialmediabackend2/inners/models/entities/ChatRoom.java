@@ -14,12 +14,13 @@ import java.util.UUID;
 @AllArgsConstructor
 @NoArgsConstructor
 @Accessors(chain = true)
-@Table(name = "post")
+@Table(name = "chat_room")
 @Entity
 public class ChatRoom extends Model {
     @Id
     UUID id;
     String name;
+    String description;
 
     @OneToMany(mappedBy = "chatRoom", fetch = FetchType.LAZY)
     Set<ChatMessage> chatMessages;
