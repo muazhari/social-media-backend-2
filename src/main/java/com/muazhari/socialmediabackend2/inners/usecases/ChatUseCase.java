@@ -81,4 +81,16 @@ public class ChatUseCase {
 
         return chatMessageRepository.saveAndFlush(chatMessage);
     }
+
+    public List<ChatRoom> getChatRoomsByIds(List<UUID> chatRoomIds) {
+        return chatRoomRepository.findAllByIdIn(chatRoomIds);
+    }
+
+    public List<ChatMessage> getChatMessagesByIds(List<UUID> chatMessageIds) {
+        return chatMessageRepository.findAllByIdIn(chatMessageIds);
+    }
+
+    public List<ChatRoomMember> getChatRoomMembersByIds(List<UUID> chatRoomMemberIds) {
+        return chatRoomMemberRepository.findAllByIdIn(chatRoomMemberIds);
+    }
 }

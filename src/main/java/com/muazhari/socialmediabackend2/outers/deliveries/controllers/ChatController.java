@@ -6,6 +6,7 @@ import com.muazhari.socialmediabackend2.inners.models.entities.ChatRoom;
 import com.muazhari.socialmediabackend2.inners.models.entities.ChatRoomMember;
 import com.muazhari.socialmediabackend2.inners.usecases.ChatUseCase;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.graphql.data.federation.EntityMapping;
 import org.springframework.graphql.data.method.annotation.Argument;
 import org.springframework.graphql.data.method.annotation.BatchMapping;
 import org.springframework.graphql.data.method.annotation.MutationMapping;
@@ -156,47 +157,19 @@ public class ChatController {
                 ));
     }
 
-    @BatchMapping(typeName = "Account", field = "messages")
-    public Map<Account, List<ChatMessage>> accountMessages(List<Account> accounts) {
-        List<UUID> accountIds = accounts
-                .stream()
-                .map(Account::getId)
-                .toList();
-
-        List<ChatMessage> chatMessages = chatUseCase
-                .getChatMessagesByAccountIds(accountIds);
-
-        return accounts.stream()
-                .collect(Collectors.toMap(
-                        account -> account,
-                        account -> chatMessages
-                                .stream()
-                                .filter(chatMessage -> chatMessage.getAccountId().equals(account.getId()))
-                                .toList()
-                ));
+    @EntityMapping
+    public List<ChatRoom> chatRoom(@Argument List<UUID> idList) {
+        return chatUseCase.getChatRoomsByIds(idList);
     }
 
-    @BatchMapping(typeName = "Account", field = "rooms")
-    public Map<Account, List<ChatRoom>> accountRooms(List<Account> accounts) {
-        List<UUID> accountIds = accounts
-                .stream()
-                .map(Account::getId)
-                .toList();
+    @EntityMapping
+    public List<ChatRoomMember> chatRoomMember(@Argument List<UUID> idList) {
+        return chatUseCase.getChatRoomMembersByIds(idList);
+    }
 
-        List<ChatRoom> chatRooms = chatUseCase
-                .getChatRoomsByAccountIds(accountIds);
-
-        return accounts.stream()
-                .collect(Collectors.toMap(
-                        account -> account,
-                        account -> chatRooms
-                                .stream()
-                                .filter(chatRoom -> chatRoom
-                                        .getChatRoomMembers()
-                                        .stream()
-                                        .anyMatch(chatRoomMember -> chatRoomMember.getAccountId().equals(account.getId())))
-                                .toList()
-                ));
+    @EntityMapping
+    public List<ChatMessage> chatMessage(@Argument List<UUID> idList) {
+        return chatUseCase.getChatMessagesByIds(idList);
     }
 
 }

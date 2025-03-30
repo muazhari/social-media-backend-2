@@ -10,4 +10,6 @@ import java.util.UUID;
 @Repository
 public interface PostRepository extends JpaRepository<Post, UUID> {
     List<Post> findAllByAccountIdIn(List<UUID> accountIds);
+
+    List<Post> findAllByIdIn(List<UUID> postIds);
 }

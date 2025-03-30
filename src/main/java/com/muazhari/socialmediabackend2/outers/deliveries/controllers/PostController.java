@@ -61,7 +61,7 @@ public class PostController {
                 .map(Post::getId)
                 .collect(Collectors.toList());
 
-        List<PostLike> postLikes = postUseCase.getPostLikes(postIds);
+        List<PostLike> postLikes = postUseCase.getPostLikesByIds(postIds);
 
         return posts
                 .stream()
@@ -86,23 +86,14 @@ public class PostController {
                 ));
     }
 
-    @BatchMapping(typeName = "Account", field = "posts")
-    public Map<Account, List<Post>> accountPosts(List<Account> accounts) {
-        List<UUID> accountIds = accounts.stream()
-                .map(Account::getId)
-                .collect(Collectors.toList());
+    @EntityMapping
+    public List<Post> post(@Argument List<UUID> idList) {
+        return postUseCase.getPostsByIds(idList);
+    }
 
-        List<Post> posts = postUseCase.getPostsByAccountIds(accountIds);
-
-        return accounts
-                .stream()
-                .collect(Collectors.toMap(
-                        account -> account,
-                        account -> posts
-                                .stream()
-                                .filter(post -> post.getAccountId().equals(account.getId()))
-                                .collect(Collectors.toList())
-                ));
+    @EntityMapping
+    public List<PostLike> postLike(@Argument List<UUID> idList) {
+        return postUseCase.getPostLikesByIds(idList);
     }
 
 }
