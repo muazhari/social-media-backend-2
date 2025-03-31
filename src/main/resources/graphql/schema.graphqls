@@ -1,13 +1,15 @@
 type ChatMessage @key(fields: "id") {
     id: ID!
     content: String!
-    account: Account!
+    accountId: ID!
+    account: Account! @external
     room: ChatRoom!
 }
 
 type ChatRoomMember @key(fields: "id") {
     id: ID!
-    account: Account!
+    accountId: ID!
+    account: Account! @external
     room: ChatRoom!
 }
 
@@ -23,23 +25,25 @@ type Post @key(fields: "id") {
     id: ID!
     title: String!
     content: String!
-    account: Account!
+    accountId: ID!
+    account: Account! @external
     likes: [PostLike]
 }
 
 type PostLike @key(fields: "id") {
     id: ID!
     post: Post!
-    account: Account!
+    accountId: ID!
+    account: Account! @external
 }
 
 type Account @key(fields: "id") @extends {
-    id: ID!
-    name: String!
-    email: String!
-    password: String!
-    totalPostLike: Float!
-    totalChatMessage: Float!
+    id: ID! @external
+    name: String! @external
+    email: String! @external
+    password: String! @external
+    totalPostLike: Float! @external
+    totalChatMessage: Float! @external
     messages: [ChatMessage]
     rooms: [ChatRoom]
     posts: [Post]
