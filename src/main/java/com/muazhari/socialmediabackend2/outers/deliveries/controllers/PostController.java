@@ -4,15 +4,16 @@ import com.muazhari.socialmediabackend2.inners.models.entities.Post;
 import com.muazhari.socialmediabackend2.inners.models.entities.PostLike;
 import com.muazhari.socialmediabackend2.inners.usecases.PostUseCase;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.graphql.data.federation.EntityMapping;
 import org.springframework.graphql.data.method.annotation.Argument;
+import org.springframework.graphql.data.method.annotation.BatchMapping;
 import org.springframework.graphql.data.method.annotation.MutationMapping;
 import org.springframework.graphql.data.method.annotation.QueryMapping;
-import org.springframework.graphql.data.method.annotation.SchemaMapping;
 import org.springframework.stereotype.Controller;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Controller
 public class PostController {
@@ -40,19 +41,22 @@ public class PostController {
         return postUseCase.unlikePost(postId, accountId);
     }
 
-    @SchemaMapping
-    public List<PostLike> likes(Post post) {
-        return postUseCase.getPostLikesByIds(List.of(post.getId()));
-    }
+    @BatchMapping
+    public Map<Post, List<PostLike>> likes(List<Post> posts) {
+        Map<UUID, Post> postMaps = posts
+                .stream()
+                .collect(Collectors.toMap(Post::getId, post -> post, (a, b) -> a));
 
-    @EntityMapping
-    public List<Post> post(@Argument List<UUID> idList) {
-        return postUseCase.getPostsByIds(idList);
-    }
+        List<PostLike> postLikes = postUseCase.getPostLikesByPostIds(
+                postMaps.keySet().stream().toList()
+        );
 
-    @EntityMapping
-    public List<PostLike> postLike(@Argument List<UUID> idList) {
-        return postUseCase.getPostLikesByIds(idList);
+        return postLikes
+                .stream()
+                .collect(Collectors.groupingBy(
+                        postLike -> postMaps.get(postLike.getPost().getId()),
+                        Collectors.mapping(postLike -> postLike, Collectors.toList())
+                ));
     }
 
 }

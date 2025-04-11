@@ -66,4 +66,12 @@ public class PostUseCase {
     public Optional<Post> getPostById(UUID id) {
         return postRepository.findById(id);
     }
+
+    public List<PostLike> getPostLikesByAccountIds(List<UUID> accountIds) {
+        return postLikeRepository.findAllByAccountIdIn(accountIds);
+    }
+
+    public List<PostLike> getPostLikesByPostIds(List<UUID> postIds) {
+        return postLikeRepository.findAllByPostIdIn(postIds);
+    }
 }
