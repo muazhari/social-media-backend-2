@@ -5,15 +5,16 @@ import com.muazhari.socialmediabackend2.inners.models.entities.ChatRoom;
 import com.muazhari.socialmediabackend2.inners.models.entities.ChatRoomMember;
 import com.muazhari.socialmediabackend2.inners.usecases.ChatUseCase;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.graphql.data.federation.EntityMapping;
 import org.springframework.graphql.data.method.annotation.Argument;
+import org.springframework.graphql.data.method.annotation.BatchMapping;
 import org.springframework.graphql.data.method.annotation.MutationMapping;
 import org.springframework.graphql.data.method.annotation.QueryMapping;
-import org.springframework.graphql.data.method.annotation.SchemaMapping;
 import org.springframework.stereotype.Controller;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Controller
 public class ChatController {
@@ -51,39 +52,76 @@ public class ChatController {
         return chatUseCase.addChatMessage(chatRoomId, accountId, content);
     }
 
-    @SchemaMapping
-    public ChatRoom room(ChatMessage chatMessage) {
-        return chatUseCase.getChatRoomByMessageId(chatMessage.getId());
+    @BatchMapping(typeName = "ChatMessage", field = "room")
+    public Map<ChatMessage, ChatRoom> chatMessageRoom(List<ChatMessage> chatMessages) {
+        Map<UUID, ChatMessage> chatMessageMaps = chatMessages
+                .stream()
+                .collect(Collectors.toMap(ChatMessage::getId, chatMessage -> chatMessage, (a, b) -> a));
+
+        List<ChatRoom> foundChatRooms = chatUseCase.getChatRoomsByIds(
+                chatMessageMaps.keySet().stream().toList()
+        );
+
+        return foundChatRooms
+                .stream()
+                .collect(Collectors.toMap(
+                        chatRoom -> chatMessageMaps.get(chatRoom.getId()),
+                        chatRoom -> chatRoom
+                ));
     }
 
-    @SchemaMapping
-    public ChatRoom room(ChatRoomMember chatRoomMember) {
-        return chatUseCase.getChatRoomByMemberId(chatRoomMember.getId());
+    @BatchMapping(typeName = "ChatRoomMember", field = "room")
+    public Map<ChatRoomMember, ChatRoom> chatRoomMemberRoom(List<ChatRoomMember> chatRoomMembers) {
+        Map<UUID, ChatRoomMember> chatRoomMemberMaps = chatRoomMembers
+                .stream()
+                .collect(Collectors.toMap(ChatRoomMember::getId, chatRoomMember -> chatRoomMember, (a, b) -> a));
+
+        List<ChatRoomMember> foundChatRoomMembers = chatUseCase.getChatRoomMembersByIds(
+                chatRoomMemberMaps.keySet().stream().toList()
+        );
+
+        return foundChatRoomMembers
+                .stream()
+                .collect(Collectors.toMap(
+                        chatRoomMember -> chatRoomMemberMaps.get(chatRoomMember.getId()),
+                        ChatRoomMember::getChatRoom
+                ));
     }
 
-    @SchemaMapping
-    public List<ChatRoomMember> members(ChatRoom chatRoom) {
-        return chatUseCase.getChatRoomMembers(chatRoom.getId());
+    @BatchMapping
+    public Map<ChatRoom, List<ChatRoomMember>> members(List<ChatRoom> chatRooms) {
+        Map<UUID, ChatRoom> chatRoomMaps = chatRooms
+                .stream()
+                .collect(Collectors.toMap(ChatRoom::getId, chatRoom -> chatRoom, (a, b) -> a));
+
+        List<ChatRoomMember> foundChatRoomMembers = chatUseCase.getChatRoomMembersByChatRoomIds(
+                chatRoomMaps.keySet().stream().toList()
+        );
+
+        return foundChatRoomMembers
+                .stream()
+                .collect(Collectors.groupingBy(
+                        chatRoomMember -> chatRoomMaps.get(chatRoomMember.getChatRoom().getId()),
+                        Collectors.mapping(chatRoomMember -> chatRoomMember, Collectors.toList())
+                ));
     }
 
-    @SchemaMapping
-    public List<ChatMessage> messages(ChatRoom chatRoom) {
-        return chatUseCase.getChatMessages(chatRoom.getId());
-    }
+    @BatchMapping
+    public Map<ChatRoom, List<ChatMessage>> messages(List<ChatRoom> chatRooms) {
+        Map<UUID, ChatRoom> chatRoomMaps = chatRooms
+                .stream()
+                .collect(Collectors.toMap(ChatRoom::getId, chatRoom -> chatRoom, (a, b) -> a));
 
-    @EntityMapping
-    public List<ChatRoom> chatRoom(@Argument List<UUID> idList) {
-        return chatUseCase.getChatRoomsByIds(idList);
-    }
+        List<ChatMessage> foundChatMessages = chatUseCase.getChatMessagesByIds(
+                chatRoomMaps.keySet().stream().toList()
+        );
 
-    @EntityMapping
-    public List<ChatRoomMember> chatRoomMember(@Argument List<UUID> idList) {
-        return chatUseCase.getChatRoomMembersByIds(idList);
-    }
-
-    @EntityMapping
-    public List<ChatMessage> chatMessage(@Argument List<UUID> idList) {
-        return chatUseCase.getChatMessagesByIds(idList);
+        return foundChatMessages
+                .stream()
+                .collect(Collectors.groupingBy(
+                        chatMessage -> chatRoomMaps.get(chatMessage.getChatRoom().getId()),
+                        Collectors.mapping(chatMessage -> chatMessage, Collectors.toList())
+                ));
     }
 
 }

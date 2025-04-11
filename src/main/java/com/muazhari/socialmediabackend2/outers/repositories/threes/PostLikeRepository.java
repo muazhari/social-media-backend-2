@@ -13,4 +13,6 @@ public interface PostLikeRepository extends JpaRepository<PostLike, UUID> {
     Optional<PostLike> findByPostIdAndAccountId(UUID postId, UUID accountId);
 
     List<PostLike> findAllByPostIdIn(List<UUID> postIds);
+
+    List<PostLike> findAllByAccountIdIn(List<UUID> accountIds);
 }

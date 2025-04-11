@@ -47,6 +47,7 @@ type Account @key(fields: "id") @extends {
     messages: [ChatMessage]
     rooms: [ChatRoom]
     posts: [Post]
+    postLikes: [PostLike]
 }
 
 type Query {

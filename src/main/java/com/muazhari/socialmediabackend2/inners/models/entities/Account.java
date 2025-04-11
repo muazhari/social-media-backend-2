@@ -12,6 +12,7 @@ import java.util.UUID;
 @AllArgsConstructor
 @NoArgsConstructor
 @Accessors(chain = true)
+@EqualsAndHashCode(callSuper = true)
 public class Account extends Model {
     UUID id;
 }

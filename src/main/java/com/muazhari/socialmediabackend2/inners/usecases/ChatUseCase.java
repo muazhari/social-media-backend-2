@@ -94,6 +94,10 @@ public class ChatUseCase {
         return chatRoomMemberRepository.findAllByIdIn(chatRoomMemberIds);
     }
 
+    public List<ChatRoomMember> getChatRoomMembersByChatRoomIds(List<UUID> chatRoomIds) {
+        return chatRoomMemberRepository.findAllByChatRoomIdIn(chatRoomIds);
+    }
+
     public List<ChatRoomMember> getChatRoomMembersByAccountIds(List<UUID> accountIds) {
         return chatRoomMemberRepository.findAllByAccountIdIn(accountIds);
     }
