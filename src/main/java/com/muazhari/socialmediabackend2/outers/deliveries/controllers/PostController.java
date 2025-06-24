@@ -43,18 +43,14 @@ public class PostController {
 
     @BatchMapping
     public Map<Post, List<PostLike>> likes(List<Post> posts) {
-        Map<UUID, Post> postMaps = posts
-                .stream()
-                .collect(Collectors.toMap(Post::getId, post -> post, (a, b) -> a));
-
         List<PostLike> postLikes = postUseCase.getPostLikesByPostIds(
-                postMaps.keySet().stream().toList()
+                posts.stream().map(Post::getId).toList()
         );
 
         return postLikes
                 .stream()
                 .collect(Collectors.groupingBy(
-                        postLike -> postMaps.get(postLike.getPost().getId()),
+                        PostLike::getPost,
                         Collectors.mapping(postLike -> postLike, Collectors.toList())
                 ));
     }

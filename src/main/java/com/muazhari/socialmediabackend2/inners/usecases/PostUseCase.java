@@ -8,7 +8,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -51,20 +50,8 @@ public class PostUseCase {
         return foundPostLike;
     }
 
-    public List<PostLike> getPostLikesByIds(List<UUID> postIds) {
-        return postLikeRepository.findAllByPostIdIn(postIds);
-    }
-
     public List<Post> getPostsByAccountIds(List<UUID> accountIds) {
         return postRepository.findAllByAccountIdIn(accountIds);
-    }
-
-    public List<Post> getPostsByIds(List<UUID> postIds) {
-        return postRepository.findAllByIdIn(postIds);
-    }
-
-    public Optional<Post> getPostById(UUID id) {
-        return postRepository.findById(id);
     }
 
     public List<PostLike> getPostLikesByAccountIds(List<UUID> accountIds) {

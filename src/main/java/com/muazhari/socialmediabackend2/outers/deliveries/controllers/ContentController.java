@@ -7,7 +7,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.graphql.data.federation.EntityMapping;
 import org.springframework.graphql.data.method.annotation.Argument;
 import org.springframework.graphql.data.method.annotation.BatchMapping;
-import org.springframework.graphql.data.method.annotation.SchemaMapping;
 import org.springframework.stereotype.Controller;
 
 import java.util.List;
@@ -26,72 +25,56 @@ public class ContentController {
 
     @BatchMapping
     public Map<Account, List<ChatMessage>> messages(List<Account> accounts) {
-        Map<UUID, Account> accountMaps = accounts
-                .stream()
-                .collect(Collectors.toMap(Account::getId, account -> account, (a, b) -> a));
-
         List<ChatMessage> foundChatMessages = chatUseCase.getChatMessagesByAccountIds(
-                accountMaps.keySet().stream().toList()
+                accounts.stream().map(Account::getId).toList()
         );
 
         return foundChatMessages
                 .stream()
                 .collect(Collectors.groupingBy(
-                        chatMessage -> accountMaps.get(chatMessage.getAccountId()),
+                        chatMessage -> Account.builder().id(chatMessage.getAccountId()).build(),
                         Collectors.mapping(chatMessage -> chatMessage, Collectors.toList())
                 ));
     }
 
     @BatchMapping
     public Map<Account, List<ChatRoom>> rooms(List<Account> accounts) {
-        Map<UUID, Account> accountMaps = accounts
-                .stream()
-                .collect(Collectors.toMap(Account::getId, account -> account, (a, b) -> a));
-
-        List<ChatRoomMember> foundChatRoomMembers = chatUseCase.getChatRoomMembersByAccountIds(
-                accountMaps.keySet().stream().toList()
+        List<ChatRoom> foundChatRoom = chatUseCase.getChatRoomsByAccountIds(
+                accounts.stream().map(Account::getId).toList()
         );
 
-        return foundChatRoomMembers
+        return foundChatRoom
                 .stream()
                 .collect(Collectors.groupingBy(
-                        chatRoomMember -> accountMaps.get(chatRoomMember.getAccountId()),
-                        Collectors.mapping(ChatRoomMember::getChatRoom, Collectors.toList())
+                        chatRoom -> Account.builder().id(chatRoom.getId()).build(),
+                        Collectors.mapping(chatRoom -> chatRoom, Collectors.toList())
                 ));
     }
 
     @BatchMapping
     public Map<Account, List<Post>> posts(List<Account> accounts) {
-        Map<UUID, Account> accountMaps = accounts
-                .stream()
-                .collect(Collectors.toMap(Account::getId, account -> account, (a, b) -> a));
-
         List<Post> foundPosts = postUseCase.getPostsByAccountIds(
-                accountMaps.keySet().stream().toList()
+                accounts.stream().map(Account::getId).toList()
         );
 
         return foundPosts
                 .stream()
                 .collect(Collectors.groupingBy(
-                        post -> accountMaps.get(post.getAccountId()),
+                        post -> Account.builder().id(post.getAccountId()).build(),
                         Collectors.mapping(post -> post, Collectors.toList())
                 ));
     }
 
     @BatchMapping
     public Map<Account, List<PostLike>> postLikes(List<Account> accounts) {
-        Map<UUID, Account> accountMaps = accounts
-                .stream()
-                .collect(Collectors.toMap(Account::getId, account -> account, (a, b) -> a));
-
         List<PostLike> foundPostLikes = postUseCase.getPostLikesByAccountIds(
-                accountMaps.keySet().stream().toList()
+                accounts.stream().map(Account::getId).toList()
         );
 
         return foundPostLikes
                 .stream()
                 .collect(Collectors.groupingBy(
-                        postLike -> accountMaps.get(postLike.getAccountId()),
+                        postLike -> Account.builder().id(postLike.getAccountId()).build(),
                         Collectors.mapping(postLike -> postLike, Collectors.toList())
                 ));
     }

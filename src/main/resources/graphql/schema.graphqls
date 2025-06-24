@@ -62,5 +62,6 @@ type Mutation {
     addMemberToChatRoom(accountId: ID!, chatRoomId: ID!): ChatRoomMember
     addChatMessage(chatRoomId: ID!, accountId: ID!, content: String!): ChatMessage
     addPost(accountId: ID!, title: String!, content: String!): Post
-    likePost(postId: ID!): Post
+    likePost(postId: ID!, accountId: ID!): Post
+    unlikePost(postId: ID!, accountId: ID!): Post
 }

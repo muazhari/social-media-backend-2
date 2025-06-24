@@ -14,4 +14,6 @@ public interface ChatMessageRepository extends JpaRepository<ChatMessage, UUID> 
     List<ChatMessage> findAllByAccountIdIn(List<UUID> accountIds);
 
     List<ChatMessage> findAllByIdIn(List<UUID> chatMessageIds);
+
+    List<ChatMessage> findAllByChatRoomIdIn(List<UUID> chatRoomIds);
 }
