@@ -2,10 +2,12 @@ package com.muazhari.socialmediabackend2.inners.usecases;
 
 import com.muazhari.socialmediabackend2.inners.models.entities.Post;
 import com.muazhari.socialmediabackend2.inners.models.entities.PostLike;
+import com.muazhari.socialmediabackend2.outers.repositories.FileRepository;
 import com.muazhari.socialmediabackend2.outers.repositories.threes.PostLikeRepository;
 import com.muazhari.socialmediabackend2.outers.repositories.threes.PostRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.UUID;
@@ -17,19 +19,40 @@ public class PostUseCase {
     @Autowired
     PostLikeRepository postLikeRepository;
 
+    @Autowired
+    FileRepository fileRepository;
+
     public List<Post> getPosts() {
-        return postRepository.findAll();
+        List<Post> foundPosts = postRepository.findAll();
+
+        for (Post foundPost : foundPosts) {
+            if (foundPost.getImageId() != null) {
+                String imageUrl = fileRepository.getFileUrl(foundPost.getImageId().toString());
+                foundPost.setImageUrl(imageUrl);
+            }
+        }
+
+        return foundPosts;
     }
 
-    public Post addPost(UUID accountId, String title, String content) {
+    public Post addPost(UUID accountId, String title, String content, MultipartFile image) {
+        UUID imageId = UUID.randomUUID();
+        fileRepository.uploadFile(imageId.toString(), image);
+
         Post post = Post
                 .builder()
+                .id(UUID.randomUUID())
                 .accountId(accountId)
                 .title(title)
                 .content(content)
+                .imageId(imageId)
                 .build();
 
-        return postRepository.saveAndFlush(post);
+        Post createdPost = postRepository.saveAndFlush(post);
+        String imageUrl = fileRepository.getFileUrl(post.getImageId().toString());
+        createdPost.setImageUrl(imageUrl);
+
+        return createdPost;
     }
 
     public PostLike likePost(UUID postId, UUID accountId) {
@@ -51,7 +74,16 @@ public class PostUseCase {
     }
 
     public List<Post> getPostsByAccountIds(List<UUID> accountIds) {
-        return postRepository.findAllByAccountIdIn(accountIds);
+        List<Post> foundPosts = postRepository.findAllByAccountIdIn(accountIds);
+
+        for (Post foundPost : foundPosts) {
+            if (foundPost.getImageId() != null) {
+                String imageUrl = fileRepository.getFileUrl(foundPost.getImageId().toString());
+                foundPost.setImageUrl(imageUrl);
+            }
+        }
+
+        return foundPosts;
     }
 
     public List<PostLike> getPostLikesByAccountIds(List<UUID> accountIds) {

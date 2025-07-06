@@ -1,3 +1,5 @@
+scalar Upload
+
 type ChatMessage @key(fields: "id") {
     id: ID!
     content: String!
@@ -21,6 +23,7 @@ type ChatRoom @key(fields: "id") {
 
 type Post @key(fields: "id") {
     id: ID!
+    imageUrl: String
     title: String!
     content: String!
     accountId: ID!
@@ -52,7 +55,7 @@ type Mutation {
     addChatRoom(name: String!, description: String): ChatRoom
     addMemberToChatRoom(accountId: ID!, chatRoomId: ID!): ChatRoomMember
     addChatMessage(chatRoomId: ID!, accountId: ID!, content: String!): ChatMessage
-    addPost(accountId: ID!, title: String!, content: String!): Post
+    addPost(accountId: ID!, title: String!, content: String!, image: Upload): Post
     likePost(postId: ID!, accountId: ID!): Post
     unlikePost(postId: ID!, accountId: ID!): Post
 }

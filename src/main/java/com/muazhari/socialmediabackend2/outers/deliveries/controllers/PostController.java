@@ -9,6 +9,7 @@ import org.springframework.graphql.data.method.annotation.BatchMapping;
 import org.springframework.graphql.data.method.annotation.MutationMapping;
 import org.springframework.graphql.data.method.annotation.QueryMapping;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.Map;
@@ -27,8 +28,8 @@ public class PostController {
     }
 
     @MutationMapping
-    public Post addPost(@Argument UUID accountId, @Argument String title, @Argument String content) {
-        return postUseCase.addPost(accountId, title, content);
+    public Post addPost(@Argument UUID accountId, @Argument String title, @Argument String content, @Argument MultipartFile image) {
+        return postUseCase.addPost(accountId, title, content, image);
     }
 
     @MutationMapping

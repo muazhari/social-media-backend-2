@@ -24,6 +24,10 @@ public class Post extends Model {
     String title;
     String content;
     UUID accountId;
+    UUID imageId;
+
+    @Transient
+    String imageUrl;
 
     @OneToMany(mappedBy = "post", fetch = FetchType.LAZY)
     Set<PostLike> postLikes;
