@@ -32,7 +32,7 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.kafka:spring-kafka'
     implementation 'org.springframework.boot:spring-boot-starter-graphql'
-    implementation 'com.graphql-java-kickstart:graphql-java-servlet-javax:16.0.0'
+    implementation 'name.nkonev.multipart-spring-graphql:multipart-spring-graphql:1.6.0'
     implementation 'com.apollographql.federation:federation-graphql-java-support:5.4.0'
     testImplementation 'org.springframework.graphql:spring-graphql-test'
     testImplementation 'org.springframework:spring-webflux'

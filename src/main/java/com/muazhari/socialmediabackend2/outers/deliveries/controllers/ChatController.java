@@ -3,6 +3,9 @@ package com.muazhari.socialmediabackend2.outers.deliveries.controllers;
 import com.muazhari.socialmediabackend2.inners.models.entities.ChatMessage;
 import com.muazhari.socialmediabackend2.inners.models.entities.ChatRoom;
 import com.muazhari.socialmediabackend2.inners.models.entities.ChatRoomMember;
+import com.muazhari.socialmediabackend2.inners.models.valueobjects.ChatMessageInput;
+import com.muazhari.socialmediabackend2.inners.models.valueobjects.ChatRoomInput;
+import com.muazhari.socialmediabackend2.inners.models.valueobjects.ChatRoomMemberInput;
 import com.muazhari.socialmediabackend2.inners.usecases.ChatUseCase;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.graphql.data.method.annotation.Argument;
@@ -38,18 +41,18 @@ public class ChatController {
     }
 
     @MutationMapping
-    public ChatRoom addChatRoom(@Argument String name, @Argument String description) {
-        return chatUseCase.addChatRoom(name, description);
+    public ChatRoom addChatRoom(@Argument ChatRoomInput input) {
+        return chatUseCase.addChatRoom(input);
     }
 
     @MutationMapping
-    public ChatRoomMember addMemberToChatRoom(@Argument UUID accountId, @Argument UUID chatRoomId) {
-        return chatUseCase.addMemberToChatRoom(accountId, chatRoomId);
+    public ChatRoomMember addMemberToChatRoom(@Argument ChatRoomMemberInput input) {
+        return chatUseCase.addMemberToChatRoom(input);
     }
 
     @MutationMapping
-    public ChatMessage addChatMessage(@Argument UUID chatRoomId, @Argument UUID accountId, @Argument String content) {
-        return chatUseCase.addChatMessage(chatRoomId, accountId, content);
+    public ChatMessage addChatMessage(@Argument ChatMessageInput input) {
+        return chatUseCase.addChatMessage(input);
     }
 
     @BatchMapping(typeName = "ChatMessage", field = "room")

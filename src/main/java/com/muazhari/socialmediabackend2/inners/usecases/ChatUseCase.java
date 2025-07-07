@@ -3,6 +3,9 @@ package com.muazhari.socialmediabackend2.inners.usecases;
 import com.muazhari.socialmediabackend2.inners.models.entities.ChatMessage;
 import com.muazhari.socialmediabackend2.inners.models.entities.ChatRoom;
 import com.muazhari.socialmediabackend2.inners.models.entities.ChatRoomMember;
+import com.muazhari.socialmediabackend2.inners.models.valueobjects.ChatMessageInput;
+import com.muazhari.socialmediabackend2.inners.models.valueobjects.ChatRoomInput;
+import com.muazhari.socialmediabackend2.inners.models.valueobjects.ChatRoomMemberInput;
 import com.muazhari.socialmediabackend2.outers.repositories.threes.ChatMessageRepository;
 import com.muazhari.socialmediabackend2.outers.repositories.threes.ChatRoomMemberRepository;
 import com.muazhari.socialmediabackend2.outers.repositories.threes.ChatRoomRepository;
@@ -47,36 +50,36 @@ public class ChatUseCase {
                 .toList();
     }
 
-    public ChatRoom addChatRoom(String name, String description) {
+    public ChatRoom addChatRoom(ChatRoomInput input) {
         ChatRoom chatRoom = ChatRoom
                 .builder()
-                .name(name)
-                .description(description)
+                .name(input.getName())
+                .description(input.getDescription())
                 .build();
 
         return chatRoomRepository.saveAndFlush(chatRoom);
     }
 
-    public ChatRoomMember addMemberToChatRoom(UUID accountId, UUID chatRoomId) {
-        ChatRoom foundChatRoom = chatRoomRepository.findById(chatRoomId).orElseThrow();
+    public ChatRoomMember addMemberToChatRoom(ChatRoomMemberInput input) {
+        ChatRoom foundChatRoom = chatRoomRepository.findById(input.getChatRoomId()).orElseThrow();
 
         ChatRoomMember chatRoomMember = ChatRoomMember
                 .builder()
                 .chatRoom(foundChatRoom)
-                .accountId(accountId)
+                .accountId(input.getAccountId())
                 .build();
 
         return chatRoomMemberRepository.saveAndFlush(chatRoomMember);
     }
 
-    public ChatMessage addChatMessage(UUID chatRoomId, UUID accountId, String content) {
-        ChatRoom foundChatRoom = chatRoomRepository.findById(chatRoomId).orElseThrow();
+    public ChatMessage addChatMessage(ChatMessageInput input) {
+        ChatRoom foundChatRoom = chatRoomRepository.findById(input.getChatRoomId()).orElseThrow();
 
         ChatMessage chatMessage = ChatMessage
                 .builder()
                 .chatRoom(foundChatRoom)
-                .accountId(accountId)
-                .content(content)
+                .accountId(input.getAccountId())
+                .content(input.getContent())
                 .build();
 
         return chatMessageRepository.saveAndFlush(chatMessage);

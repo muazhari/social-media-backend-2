@@ -2,18 +2,20 @@ package com.muazhari.socialmediabackend2.inners.usecases;
 
 import com.muazhari.socialmediabackend2.inners.models.entities.Post;
 import com.muazhari.socialmediabackend2.inners.models.entities.PostLike;
+import com.muazhari.socialmediabackend2.inners.models.valueobjects.PostInput;
+import com.muazhari.socialmediabackend2.inners.models.valueobjects.PostLikeInput;
 import com.muazhari.socialmediabackend2.outers.repositories.FileRepository;
 import com.muazhari.socialmediabackend2.outers.repositories.threes.PostLikeRepository;
 import com.muazhari.socialmediabackend2.outers.repositories.threes.PostRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 @Service
 public class PostUseCase {
+    final String bucketName = "social-media-backend.post";
+
     @Autowired
     PostRepository postRepository;
     @Autowired
@@ -27,7 +29,7 @@ public class PostUseCase {
 
         for (Post foundPost : foundPosts) {
             if (foundPost.getImageId() != null) {
-                String imageUrl = fileRepository.getFileUrl(foundPost.getImageId().toString());
+                String imageUrl = fileRepository.getUrl(bucketName, foundPost.getImageId().toString());
                 foundPost.setImageUrl(imageUrl);
             }
         }
@@ -35,39 +37,54 @@ public class PostUseCase {
         return foundPosts;
     }
 
-    public Post addPost(UUID accountId, String title, String content, MultipartFile image) {
-        UUID imageId = UUID.randomUUID();
-        fileRepository.uploadFile(imageId.toString(), image);
-
+    public Post addPost(PostInput input) {
         Post post = Post
                 .builder()
                 .id(UUID.randomUUID())
-                .accountId(accountId)
-                .title(title)
-                .content(content)
-                .imageId(imageId)
+                .accountId(input.getAccountId())
+                .title(input.getTitle())
+                .content(input.getContent())
                 .build();
 
+        if (input.getImage() != null) {
+            post.setImageId(UUID.randomUUID());
+            HashMap<String, String> extensionToContentType = new HashMap<>(Map.of(
+                    "jpg", "image/jpeg",
+                    "jpeg", "image/jpeg",
+                    "png", "image/png"
+            ));
+            String fileName = Objects.requireNonNull(input.getImage().getOriginalFilename());
+            String fileExtension = fileName.substring(fileName.lastIndexOf(".") + 1).toLowerCase();
+            String contentType = extensionToContentType.get(fileExtension);
+            if (contentType == null) {
+                throw new IllegalArgumentException("Unsupported file extension: " + fileExtension);
+            }
+            fileRepository.upload(bucketName, post.getImageId().toString(), input.getImage(), contentType);
+        }
+
         Post createdPost = postRepository.saveAndFlush(post);
-        String imageUrl = fileRepository.getFileUrl(post.getImageId().toString());
-        createdPost.setImageUrl(imageUrl);
+
+        if (createdPost.getImageId() != null) {
+            String imageUrl = fileRepository.getUrl(bucketName, createdPost.getImageId().toString());
+            createdPost.setImageUrl(imageUrl);
+        }
 
         return createdPost;
     }
 
-    public PostLike likePost(UUID postId, UUID accountId) {
-        Post foundPost = postRepository.findById(postId).orElseThrow();
+    public PostLike likePost(PostLikeInput input) {
+        Post foundPost = postRepository.findById(input.getPostId()).orElseThrow();
         PostLike postLike = PostLike
                 .builder()
                 .post(foundPost)
-                .accountId(accountId)
+                .accountId(input.getAccountId())
                 .build();
 
         return postLikeRepository.saveAndFlush(postLike);
     }
 
-    public PostLike unlikePost(UUID postId, UUID accountId) {
-        PostLike foundPostLike = postLikeRepository.findByPostIdAndAccountId(postId, accountId).orElseThrow();
+    public PostLike unlikePost(PostLikeInput input) {
+        PostLike foundPostLike = postLikeRepository.findByPostIdAndAccountId(input.getPostId(), input.getAccountId()).orElseThrow();
         postLikeRepository.delete(foundPostLike);
 
         return foundPostLike;
@@ -78,7 +95,7 @@ public class PostUseCase {
 
         for (Post foundPost : foundPosts) {
             if (foundPost.getImageId() != null) {
-                String imageUrl = fileRepository.getFileUrl(foundPost.getImageId().toString());
+                String imageUrl = fileRepository.getUrl(bucketName, foundPost.getImageId().toString());
                 foundPost.setImageUrl(imageUrl);
             }
         }

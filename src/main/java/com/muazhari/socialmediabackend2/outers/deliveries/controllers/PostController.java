@@ -2,6 +2,8 @@ package com.muazhari.socialmediabackend2.outers.deliveries.controllers;
 
 import com.muazhari.socialmediabackend2.inners.models.entities.Post;
 import com.muazhari.socialmediabackend2.inners.models.entities.PostLike;
+import com.muazhari.socialmediabackend2.inners.models.valueobjects.PostInput;
+import com.muazhari.socialmediabackend2.inners.models.valueobjects.PostLikeInput;
 import com.muazhari.socialmediabackend2.inners.usecases.PostUseCase;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.graphql.data.method.annotation.Argument;
@@ -9,11 +11,9 @@ import org.springframework.graphql.data.method.annotation.BatchMapping;
 import org.springframework.graphql.data.method.annotation.MutationMapping;
 import org.springframework.graphql.data.method.annotation.QueryMapping;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Controller
@@ -28,18 +28,18 @@ public class PostController {
     }
 
     @MutationMapping
-    public Post addPost(@Argument UUID accountId, @Argument String title, @Argument String content, @Argument MultipartFile image) {
-        return postUseCase.addPost(accountId, title, content, image);
+    public Post addPost(@Argument PostInput input) {
+        return postUseCase.addPost(input);
     }
 
     @MutationMapping
-    public PostLike likePost(@Argument UUID postId, @Argument UUID accountId) {
-        return postUseCase.likePost(postId, accountId);
+    public PostLike likePost(@Argument PostLikeInput input) {
+        return postUseCase.likePost(input);
     }
 
     @MutationMapping
-    public PostLike unlikePost(@Argument UUID postId, @Argument UUID accountId) {
-        return postUseCase.unlikePost(postId, accountId);
+    public PostLike unlikePost(@Argument PostLikeInput input) {
+        return postUseCase.unlikePost(input);
     }
 
     @BatchMapping
