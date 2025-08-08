@@ -1,15 +1,23 @@
 package com.muazhari.socialmediabackend2.outers.configs;
 
+import com.muazhari.socialmediabackend2.inners.models.entities.Account;
+import com.muazhari.socialmediabackend2.inners.usecases.AccountUseCase;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.convert.converter.Converter;
 import org.springframework.core.env.Environment;
+import org.springframework.lang.NonNull;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.core.token.Sha512DigestUtils;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.oauth2.jwt.JwtDecoder;
+import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
@@ -17,14 +25,18 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.UUID;
 
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
-public class SecurityConfig implements PasswordEncoder {
+public class SecurityConfig implements PasswordEncoder, Converter<Jwt, UsernamePasswordAuthenticationToken> {
 
     @Autowired
     Environment environment;
+    @Autowired
+    AccountUseCase accountUseCase;
+
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -35,6 +47,12 @@ public class SecurityConfig implements PasswordEncoder {
                 .httpBasic(AbstractHttpConfigurer::disable)
                 .logout(AbstractHttpConfigurer::disable)
                 .sessionManagement(AbstractHttpConfigurer::disable)
+                .oauth2ResourceServer(oauth2 -> oauth2
+                        .jwt(jwt -> jwt
+                                .decoder(jwtDecoder())
+                                .jwtAuthenticationConverter(this)
+                        )
+                )
                 .authorizeHttpRequests(authorizeHttpRequests -> authorizeHttpRequests
                         .anyRequest().permitAll()
                 )
@@ -50,6 +68,18 @@ public class SecurityConfig implements PasswordEncoder {
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
         return source;
+    }
+
+    @Override
+    public UsernamePasswordAuthenticationToken convert(@NonNull Jwt jwt) {
+        Account account = accountUseCase.getAccountById(UUID.fromString(jwt.getSubject()));
+        return new UsernamePasswordAuthenticationToken(account, account.getPassword(), account.getAuthorities());
+    }
+
+    @Bean
+    public JwtDecoder jwtDecoder() {
+        String jwkSetUri = environment.getProperty("auth.jwks.url");
+        return NimbusJwtDecoder.withJwkSetUri(jwkSetUri).build();
     }
 
     @Override

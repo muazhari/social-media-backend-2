@@ -17,6 +17,7 @@ import java.util.UUID;
 @Accessors(chain = true)
 @Table(name = "chat_message")
 @Entity
+@ToString(callSuper = true)
 public class ChatMessage extends Model {
     @Id
     UUID id;
@@ -25,6 +26,7 @@ public class ChatMessage extends Model {
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "chat_room_id", nullable = false)
+    @ToString.Exclude
     ChatRoom chatRoom;
 
     @Override

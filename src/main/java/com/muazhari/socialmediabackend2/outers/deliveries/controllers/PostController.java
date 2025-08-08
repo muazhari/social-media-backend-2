@@ -1,15 +1,18 @@
 package com.muazhari.socialmediabackend2.outers.deliveries.controllers;
 
+import com.muazhari.socialmediabackend2.inners.models.entities.Account;
 import com.muazhari.socialmediabackend2.inners.models.entities.Post;
 import com.muazhari.socialmediabackend2.inners.models.entities.PostLike;
 import com.muazhari.socialmediabackend2.inners.models.valueobjects.PostInput;
 import com.muazhari.socialmediabackend2.inners.models.valueobjects.PostLikeInput;
 import com.muazhari.socialmediabackend2.inners.usecases.PostUseCase;
+import com.muazhari.socialmediabackend2.outers.exceptions.AuthenticationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.graphql.data.method.annotation.Argument;
 import org.springframework.graphql.data.method.annotation.BatchMapping;
 import org.springframework.graphql.data.method.annotation.MutationMapping;
 import org.springframework.graphql.data.method.annotation.QueryMapping;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 
 import java.util.List;
@@ -25,6 +28,18 @@ public class PostController {
     @QueryMapping
     public List<Post> posts() {
         return postUseCase.getPosts();
+    }
+
+    @QueryMapping
+    public List<Post> myPosts(
+            @AuthenticationPrincipal Account account
+    ) throws Exception {
+        if (account == null) {
+            throw new AuthenticationException();
+        }
+        return postUseCase.getPostsByAccountIds(
+                List.of(account.getId())
+        );
     }
 
     @MutationMapping

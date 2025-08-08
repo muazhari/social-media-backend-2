@@ -17,6 +17,7 @@ import java.util.UUID;
 @Accessors(chain = true)
 @Table(name = "post_like")
 @Entity
+@ToString(callSuper = true)
 public class PostLike extends Model {
     @Id
     UUID id;
@@ -24,6 +25,7 @@ public class PostLike extends Model {
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "post_id", nullable = false)
+    @ToString.Exclude
     Post post;
 
     @Override

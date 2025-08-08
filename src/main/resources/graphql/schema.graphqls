@@ -1,3 +1,5 @@
+directive @fromClaim(name: String!) on INPUT_FIELD_DEFINITION
+
 type ChatMessage @key(fields: "id") {
     id: ID!
     content: String!
@@ -48,18 +50,18 @@ input ChatRoomInput {
 }
 
 input ChatRoomMemberInput {
-    accountId: ID!
+    accountId: ID! @fromClaim(name: "sub")
     chatRoomId: ID!
 }
 
 input ChatMessageInput {
     chatRoomId: ID!
-    accountId: ID!
+    accountId: ID! @fromClaim(name: "sub")
     content: String!
 }
 
 input PostInput {
-    accountId: ID!
+    accountId: ID! @fromClaim(name: "sub")
     title: String!
     content: String!
     image: Upload
@@ -67,7 +69,7 @@ input PostInput {
 
 input PostLikeInput {
     postId: ID!
-    accountId: ID!
+    accountId: ID! @fromClaim(name: "sub")
 }
 
 type Query {
@@ -75,6 +77,8 @@ type Query {
     chatRoomMembers(chatRoomId: ID!): [ChatRoomMember]
     chatMessages(chatRoomId: ID!): [ChatMessage]
     posts: [Post]
+    myPosts: [Post]
+    myChatRooms: [ChatRoom]
 }
 
 type Mutation {

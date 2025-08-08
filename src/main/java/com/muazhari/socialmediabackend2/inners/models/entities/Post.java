@@ -18,6 +18,7 @@ import java.util.UUID;
 @Accessors(chain = true)
 @Table(name = "post")
 @Entity
+@ToString(callSuper = true)
 public class Post extends Model {
     @Id
     UUID id;
@@ -30,6 +31,7 @@ public class Post extends Model {
     String imageUrl;
 
     @OneToMany(mappedBy = "post", fetch = FetchType.LAZY)
+    @ToString.Exclude
     Set<PostLike> postLikes;
 
     @Override

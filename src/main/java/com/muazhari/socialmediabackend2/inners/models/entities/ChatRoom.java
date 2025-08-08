@@ -18,6 +18,7 @@ import java.util.UUID;
 @Accessors(chain = true)
 @Table(name = "chat_room")
 @Entity
+@ToString(callSuper = true)
 public class ChatRoom extends Model {
     @Id
     UUID id;
@@ -25,9 +26,11 @@ public class ChatRoom extends Model {
     String description;
 
     @OneToMany(mappedBy = "chatRoom", fetch = FetchType.LAZY)
+    @ToString.Exclude
     Set<ChatMessage> chatMessages;
 
     @OneToMany(mappedBy = "chatRoom", fetch = FetchType.LAZY)
+    @ToString.Exclude
     Set<ChatRoomMember> chatRoomMembers;
 
     @Override

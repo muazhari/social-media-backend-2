@@ -1,5 +1,6 @@
 package com.muazhari.socialmediabackend2.outers.deliveries.controllers;
 
+import com.muazhari.socialmediabackend2.inners.models.entities.Account;
 import com.muazhari.socialmediabackend2.inners.models.entities.ChatMessage;
 import com.muazhari.socialmediabackend2.inners.models.entities.ChatRoom;
 import com.muazhari.socialmediabackend2.inners.models.entities.ChatRoomMember;
@@ -7,11 +8,13 @@ import com.muazhari.socialmediabackend2.inners.models.valueobjects.ChatMessageIn
 import com.muazhari.socialmediabackend2.inners.models.valueobjects.ChatRoomInput;
 import com.muazhari.socialmediabackend2.inners.models.valueobjects.ChatRoomMemberInput;
 import com.muazhari.socialmediabackend2.inners.usecases.ChatUseCase;
+import com.muazhari.socialmediabackend2.outers.exceptions.AuthenticationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.graphql.data.method.annotation.Argument;
 import org.springframework.graphql.data.method.annotation.BatchMapping;
 import org.springframework.graphql.data.method.annotation.MutationMapping;
 import org.springframework.graphql.data.method.annotation.QueryMapping;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 
 import java.util.List;
@@ -28,6 +31,18 @@ public class ChatController {
     @QueryMapping
     public List<ChatRoom> chatRooms() {
         return chatUseCase.getChatRooms();
+    }
+
+    @QueryMapping
+    public List<ChatRoom> myChatRooms(
+            @AuthenticationPrincipal Account account
+    ) throws Exception {
+        if (account == null) {
+            throw new AuthenticationException();
+        }
+        return chatUseCase.getChatRoomsByAccountIds(
+                List.of(account.getId())
+        );
     }
 
     @QueryMapping
