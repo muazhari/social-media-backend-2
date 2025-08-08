@@ -73,7 +73,7 @@ public class SecurityConfig implements PasswordEncoder, Converter<Jwt, UsernameP
     @Override
     public UsernamePasswordAuthenticationToken convert(@NonNull Jwt jwt) {
         Account account = accountUseCase.getAccountById(UUID.fromString(jwt.getSubject()));
-        return new UsernamePasswordAuthenticationToken(account, account.getPassword(), account.getAuthorities());
+        return new UsernamePasswordAuthenticationToken(account, jwt.getTokenValue(), account.getAuthorities());
     }
 
     @Bean

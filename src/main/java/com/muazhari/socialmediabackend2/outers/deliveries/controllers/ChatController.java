@@ -9,12 +9,15 @@ import com.muazhari.socialmediabackend2.inners.models.valueobjects.ChatRoomInput
 import com.muazhari.socialmediabackend2.inners.models.valueobjects.ChatRoomMemberInput;
 import com.muazhari.socialmediabackend2.inners.usecases.ChatUseCase;
 import com.muazhari.socialmediabackend2.outers.exceptions.AuthenticationException;
+import com.muazhari.socialmediabackend2.outers.exceptions.AuthorizationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.graphql.data.method.annotation.Argument;
 import org.springframework.graphql.data.method.annotation.BatchMapping;
 import org.springframework.graphql.data.method.annotation.MutationMapping;
 import org.springframework.graphql.data.method.annotation.QueryMapping;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 
 import java.util.List;
@@ -61,12 +64,56 @@ public class ChatController {
     }
 
     @MutationMapping
-    public ChatRoomMember addMemberToChatRoom(@Argument ChatRoomMemberInput input) {
+    public ChatRoomMember addMemberToChatRoom(
+            @AuthenticationPrincipal Account account,
+            @Argument ChatRoomMemberInput input
+    ) throws Exception {
+        if (account == null) {
+            throw new AuthenticationException();
+        }
+
+        if (input.getAccountId() == null) {
+            input.setAccountId(account.getId());
+        } else {
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            boolean isAdmin = authentication != null
+                    && authentication
+                    .getAuthorities()
+                    .stream()
+                    .anyMatch(grantedAuthority -> grantedAuthority.getAuthority().equals("admin"));
+
+            if (!isAdmin && !input.getAccountId().equals(account.getId())) {
+                throw new AuthorizationException();
+            }
+        }
+
         return chatUseCase.addMemberToChatRoom(input);
     }
 
     @MutationMapping
-    public ChatMessage addChatMessage(@Argument ChatMessageInput input) {
+    public ChatMessage addChatMessage(
+            @AuthenticationPrincipal Account account,
+            @Argument ChatMessageInput input
+    ) throws Exception {
+        if (account == null) {
+            throw new AuthenticationException();
+        }
+
+        if (input.getAccountId() == null) {
+            input.setAccountId(account.getId());
+        } else {
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            boolean isAdmin = authentication != null
+                    && authentication
+                    .getAuthorities()
+                    .stream()
+                    .anyMatch(grantedAuthority -> grantedAuthority.getAuthority().equals("admin"));
+
+            if (!isAdmin && !input.getAccountId().equals(account.getId())) {
+                throw new AuthorizationException();
+            }
+        }
+
         return chatUseCase.addChatMessage(input);
     }
 

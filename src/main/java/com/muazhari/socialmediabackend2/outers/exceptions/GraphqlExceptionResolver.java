@@ -23,6 +23,16 @@ public class GraphqlExceptionResolver extends DataFetcherExceptionResolverAdapte
                             .location(env.getField().getSourceLocation())
                             .build()
             );
+        } else if (ex instanceof AuthorizationException) {
+            return List.of(
+                    GraphQLError
+                            .newError()
+                            .errorType(ErrorType.FORBIDDEN)
+                            .message("Authorization failed, you do not have permission.")
+                            .path(env.getExecutionStepInfo().getPath())
+                            .location(env.getField().getSourceLocation())
+                            .build()
+            );
         }
 
         return super.resolveToMultipleErrors(ex, env);

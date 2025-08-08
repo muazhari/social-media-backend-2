@@ -30,7 +30,6 @@ public class AccountGateway {
                         imageUrl
                         name
                         email
-                        password
                         totalPostLike
                         totalChatMessage
                         scopes
