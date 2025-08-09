@@ -10,9 +10,11 @@ import com.muazhari.socialmediabackend2.outers.repositories.threes.ChatMessageRe
 import com.muazhari.socialmediabackend2.outers.repositories.threes.ChatRoomMemberRepository;
 import com.muazhari.socialmediabackend2.outers.repositories.threes.ChatRoomRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @Service
@@ -23,6 +25,8 @@ public class ChatUseCase {
     ChatRoomRepository chatRoomRepository;
     @Autowired
     ChatRoomMemberRepository chatRoomMemberRepository;
+    @Autowired
+    KafkaTemplate<String, Object> kafkaTemplate;
 
     public List<ChatRoom> getChatRooms() {
         return chatRoomRepository.findAll();
@@ -82,7 +86,14 @@ public class ChatUseCase {
                 .content(input.getContent())
                 .build();
 
-        return chatMessageRepository.saveAndFlush(chatMessage);
+        ChatMessage created = chatMessageRepository.saveAndFlush(chatMessage);
+
+        kafkaTemplate.send(
+                "chatMessage.increment",
+                Map.of("account_id", input.getAccountId())
+        );
+
+        return created;
     }
 
     public List<ChatMessage> getChatMessagesByIds(List<UUID> chatMessageIds) {

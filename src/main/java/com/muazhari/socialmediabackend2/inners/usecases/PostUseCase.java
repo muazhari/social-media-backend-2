@@ -8,6 +8,7 @@ import com.muazhari.socialmediabackend2.outers.repositories.FileRepository;
 import com.muazhari.socialmediabackend2.outers.repositories.threes.PostLikeRepository;
 import com.muazhari.socialmediabackend2.outers.repositories.threes.PostRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -20,9 +21,10 @@ public class PostUseCase {
     PostRepository postRepository;
     @Autowired
     PostLikeRepository postLikeRepository;
-
     @Autowired
     FileRepository fileRepository;
+    @Autowired
+    KafkaTemplate<String, Object> kafkaTemplate;
 
     public List<Post> getPosts() {
         List<Post> foundPosts = postRepository.findAll();
@@ -76,18 +78,31 @@ public class PostUseCase {
         Post foundPost = postRepository.findById(input.getPostId()).orElseThrow();
         PostLike postLike = PostLike
                 .builder()
+                .id(UUID.randomUUID())
                 .post(foundPost)
                 .accountId(input.getAccountId())
                 .build();
 
-        return postLikeRepository.saveAndFlush(postLike);
+        PostLike created = postLikeRepository.saveAndFlush(postLike);
+
+        kafkaTemplate.send(
+                "postLike.increment",
+                Map.of("account_id", input.getAccountId())
+        );
+
+        return created;
     }
 
     public PostLike unlikePost(PostLikeInput input) {
-        PostLike foundPostLike = postLikeRepository.findByPostIdAndAccountId(input.getPostId(), input.getAccountId()).orElseThrow();
-        postLikeRepository.delete(foundPostLike);
+        List<PostLike> foundPostLikes = postLikeRepository.findAllByPostIdAndAccountId(input.getPostId(), input.getAccountId());
+        postLikeRepository.deleteAll(foundPostLikes);
 
-        return foundPostLike;
+        kafkaTemplate.send(
+                "postLike.decrement",
+                Map.of("account_id", input.getAccountId())
+        );
+
+        return foundPostLikes.getFirst();
     }
 
     public List<Post> getPostsByAccountIds(List<UUID> accountIds) {
