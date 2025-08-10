@@ -4,11 +4,11 @@ import com.muazhari.socialmediabackend2.inners.models.entities.Post;
 import com.muazhari.socialmediabackend2.inners.models.entities.PostLike;
 import com.muazhari.socialmediabackend2.inners.models.valueobjects.PostInput;
 import com.muazhari.socialmediabackend2.inners.models.valueobjects.PostLikeInput;
+import com.muazhari.socialmediabackend2.outers.configs.FederationConfig;
 import com.muazhari.socialmediabackend2.outers.repositories.FileRepository;
 import com.muazhari.socialmediabackend2.outers.repositories.threes.PostLikeRepository;
 import com.muazhari.socialmediabackend2.outers.repositories.threes.PostRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -24,7 +24,7 @@ public class PostUseCase {
     @Autowired
     FileRepository fileRepository;
     @Autowired
-    KafkaTemplate<String, Object> kafkaTemplate;
+    FederationConfig federationConfig;
 
     public List<Post> getPosts() {
         List<Post> foundPosts = postRepository.findAll();
@@ -83,24 +83,30 @@ public class PostUseCase {
                 .accountId(input.getAccountId())
                 .build();
 
-        PostLike created = postLikeRepository.saveAndFlush(postLike);
+        PostLike createdPost = postLikeRepository.saveAndFlush(postLike);
 
-        kafkaTemplate.send(
-                "postLike.increment",
-                Map.of("account_id", input.getAccountId())
-        );
+        federationConfig.
+                getHttpGraphQlClient()
+                .document("mutation($accountId: ID!){ publishPostLikeIncrement(accountId: $accountId){ success } }")
+                .variables(Map.of("accountId", input.getAccountId().toString()))
+                .retrieve("publishPostLikeIncrement.success")
+                .toEntity(Boolean.class)
+                .block();
 
-        return created;
+        return createdPost;
     }
 
     public PostLike unlikePost(PostLikeInput input) {
         List<PostLike> foundPostLikes = postLikeRepository.findAllByPostIdAndAccountId(input.getPostId(), input.getAccountId());
         postLikeRepository.deleteAll(foundPostLikes);
 
-        kafkaTemplate.send(
-                "postLike.decrement",
-                Map.of("account_id", input.getAccountId())
-        );
+        federationConfig.
+                getHttpGraphQlClient()
+                .document("mutation($accountId: ID!){ publishPostLikeDecrement(accountId: $accountId){ success } }")
+                .variables(Map.of("accountId", input.getAccountId().toString()))
+                .retrieve("publishPostLikeDecrement.success")
+                .toEntity(Boolean.class)
+                .block();
 
         return foundPostLikes.getFirst();
     }

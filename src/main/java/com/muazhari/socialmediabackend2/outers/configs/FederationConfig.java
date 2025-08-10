@@ -29,10 +29,25 @@ public class FederationConfig {
     }
 
     public HttpGraphQlClient getHttpGraphQlClient(Consumer<HttpHeaders> headers) {
+        String url = Objects.requireNonNull(environment.getProperty("router.one.url")) + "/graphql";
+
         WebClient webClient = WebClient
                 .builder()
                 .defaultHeaders(headers)
-                .baseUrl(Objects.requireNonNull(environment.getProperty("router.one.url")) + "/graphql")
+                .baseUrl(url)
+                .build();
+
+        return HttpGraphQlClient
+                .builder(webClient)
+                .build();
+    }
+
+    public HttpGraphQlClient getHttpGraphQlClient() {
+        String url = Objects.requireNonNull(environment.getProperty("router.one.url")) + "/graphql";
+
+        WebClient webClient = WebClient
+                .builder()
+                .baseUrl(url)
                 .build();
 
         return HttpGraphQlClient

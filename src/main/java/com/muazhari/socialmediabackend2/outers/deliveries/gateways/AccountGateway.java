@@ -18,7 +18,6 @@ import java.util.function.Consumer;
 
 @Component
 public class AccountGateway {
-
     @Autowired
     FederationConfig federationConfig;
 

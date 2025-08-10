@@ -6,11 +6,11 @@ import com.muazhari.socialmediabackend2.inners.models.entities.ChatRoomMember;
 import com.muazhari.socialmediabackend2.inners.models.valueobjects.ChatMessageInput;
 import com.muazhari.socialmediabackend2.inners.models.valueobjects.ChatRoomInput;
 import com.muazhari.socialmediabackend2.inners.models.valueobjects.ChatRoomMemberInput;
+import com.muazhari.socialmediabackend2.outers.configs.FederationConfig;
 import com.muazhari.socialmediabackend2.outers.repositories.threes.ChatMessageRepository;
 import com.muazhari.socialmediabackend2.outers.repositories.threes.ChatRoomMemberRepository;
 import com.muazhari.socialmediabackend2.outers.repositories.threes.ChatRoomRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -26,7 +26,7 @@ public class ChatUseCase {
     @Autowired
     ChatRoomMemberRepository chatRoomMemberRepository;
     @Autowired
-    KafkaTemplate<String, Object> kafkaTemplate;
+    FederationConfig federationConfig;
 
     public List<ChatRoom> getChatRooms() {
         return chatRoomRepository.findAll();
@@ -57,6 +57,7 @@ public class ChatUseCase {
     public ChatRoom addChatRoom(ChatRoomInput input) {
         ChatRoom chatRoom = ChatRoom
                 .builder()
+                .id(UUID.randomUUID())
                 .name(input.getName())
                 .description(input.getDescription())
                 .build();
@@ -69,6 +70,7 @@ public class ChatUseCase {
 
         ChatRoomMember chatRoomMember = ChatRoomMember
                 .builder()
+                .id(UUID.randomUUID())
                 .chatRoom(foundChatRoom)
                 .accountId(input.getAccountId())
                 .build();
@@ -81,19 +83,23 @@ public class ChatUseCase {
 
         ChatMessage chatMessage = ChatMessage
                 .builder()
+                .id(UUID.randomUUID())
                 .chatRoom(foundChatRoom)
                 .accountId(input.getAccountId())
                 .content(input.getContent())
                 .build();
 
-        ChatMessage created = chatMessageRepository.saveAndFlush(chatMessage);
+        ChatMessage createdChatMessage = chatMessageRepository.saveAndFlush(chatMessage);
 
-        kafkaTemplate.send(
-                "chatMessage.increment",
-                Map.of("account_id", input.getAccountId())
-        );
+        federationConfig.
+                getHttpGraphQlClient()
+                .document("mutation($accountId: ID!){ publishChatMessageIncrement(accountId: $accountId){ success } }")
+                .variables(Map.of("accountId", input.getAccountId().toString()))
+                .retrieve("publishChatMessageIncrement.success")
+                .toEntity(Boolean.class)
+                .block();
 
-        return created;
+        return createdChatMessage;
     }
 
     public List<ChatMessage> getChatMessagesByIds(List<UUID> chatMessageIds) {
