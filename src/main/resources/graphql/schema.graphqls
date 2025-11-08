@@ -1,3 +1,5 @@
+directive @authenticated on FIELD_DEFINITION
+
 type ChatMessage @key(fields: "id") {
     id: ID!
     content: String!
@@ -79,10 +81,10 @@ type Query {
 }
 
 type Mutation {
-    addChatRoom(input: ChatRoomInput!): ChatRoom
-    addMemberToChatRoom(input: ChatRoomMemberInput!): ChatRoomMember
-    addMyChatMessage(input: ChatMessageInput!): ChatMessage
-    addMyPost(input: PostInput!): Post
-    likePost(input: PostLikeInput!): PostLike
-    unlikePost(input: PostLikeInput!): PostLike
+    addChatRoom(input: ChatRoomInput!): ChatRoom @authenticated
+    addMemberToChatRoom(input: ChatRoomMemberInput!): ChatRoomMember @authenticated
+    addMyChatMessage(input: ChatMessageInput!): ChatMessage @authenticated
+    addMyPost(input: PostInput!): Post @authenticated
+    likePost(input: PostLikeInput!): PostLike @authenticated
+    unlikePost(input: PostLikeInput!): PostLike @authenticated
 }
